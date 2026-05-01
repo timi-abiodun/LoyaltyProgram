@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AchievementType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,7 @@ class Achievement extends Model
         return [
             'points_awarded' => 'integer',
             'threshold'      => 'integer',
+            'type'           => AchievementType::class,
         ];
     }
     

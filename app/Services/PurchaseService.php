@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PurchaseStatus;
 use App\Models\User;
 use App\Models\Purchase;
 use App\Events\PurchaseCompleted;
@@ -15,7 +16,7 @@ class PurchaseService
             Purchase::create([
                 'user_id' => $user->id,
                 'amount' => $amount,
-                'status' => 'completed'
+                'status' => PurchaseStatus::COMPLETED,
             ]);
 
             $user->increment('total_amount_spent', $amount);

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AchievementType;
 use App\Models\Achievement;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,7 +14,7 @@ class AchievementFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->words(2, true),
-            'type' => $this->faker->randomElement(['purchases_count', 'amount_spent']),
+            'type' => $this->faker->randomElement([AchievementType::PURCHASES_COUNT, AchievementType::AMOUNT_SPENT]),
             'points_awarded' => $this->faker->numberBetween(10, 500),
             'threshold' => $this->faker->numberBetween(1, 1000),
         ];
@@ -22,13 +23,13 @@ class AchievementFactory extends Factory
     // Purchase-based states
     public function purchaseType(): static
     {
-        return $this->state(fn () => ['type' => 'purchases_count']);
+        return $this->state(fn () => ['type' => AchievementType::PURCHASES_COUNT]);
     }
 
     // Spending-based states
     public function spendingType(): static
     {
-        return $this->state(fn () => ['type' => 'amount_spent']);
+        return $this->state(fn () => ['type' => AchievementType::AMOUNT_SPENT]);
     }
 
     // Specific Tier States
@@ -36,7 +37,7 @@ class AchievementFactory extends Factory
     {
         return $this->state(fn () => [
             'name' => 'Whale',
-            'type' => 'amount_spent',
+            'type' => AchievementType::AMOUNT_SPENT,
             'points_awarded' => 1000,
             'threshold' => 25000,
         ]);

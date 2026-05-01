@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PurchaseStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
@@ -18,6 +19,7 @@ class Purchase extends Model
     protected function casts(): array
     {
         return [
+            'status' => PurchaseStatus::class,
             'amount' => 'decimal:2',
         ];
     }

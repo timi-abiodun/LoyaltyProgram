@@ -1,12 +1,7 @@
 <?php
 
 use App\Models\User;
-
-// test('example', function () {
-//     $response = $this->get('/');
-
-//     $response->assertStatus(200);
-// });
+use App\Enums\PurchaseStatus;
 
 it('creates a purchase and updates user aggregates', function () {
     // arrange - create a user and authenticate
@@ -29,7 +24,7 @@ it('creates a purchase and updates user aggregates', function () {
     $this->assertDatabaseHas('purchases', [
         'user_id' => $user->id,
         'amount'  => 10000,
-        'status'  => 'completed',
+        'status'  => PurchaseStatus::COMPLETED,
     ]);
 
     $this->assertDatabaseHas('users', [

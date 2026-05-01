@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('purchases', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained()->restrictOnDelete();
             $table->decimal('amount', 16, 2)->default(0);
-            $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
     }

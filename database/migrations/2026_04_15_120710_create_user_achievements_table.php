@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_achievements', function (Blueprint $table) {
-            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('achievement_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained()->restrictOnDelete();
+            $table->foreignUuid('achievement_id')->constrained()->restrictOnDelete();
             $table->timestamp('unlocked_at');
 
             $table->index(['user_id', 'unlocked_at']);
