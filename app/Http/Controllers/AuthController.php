@@ -12,7 +12,8 @@ class AuthController extends Controller
     public function register(Request $request){
         // 1. Strict Validation
         $fields = $request->validate([
-            'full_name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'username' => 'required',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed' // Looks for password_confirmation
@@ -20,7 +21,8 @@ class AuthController extends Controller
 
         // 2. Create User
         $user = User::create([
-            'full_name' => $fields['full_name'],
+            'first_name' => $fields['first_name'],
+            'last_name' => $fields['last_name'],
             'username' => $fields['username'],
             'email' => $fields['email'],
             'password' => Hash::make($fields['password']), //HASH passwords

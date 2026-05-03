@@ -14,16 +14,11 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('full_name');
+            $table->string('first_name');
+            $table->string('last_name');
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('password');
-
-            // User aggregates
-            $table->bigInteger('current_points')->default(0);
-            $table->decimal('total_amount_spent', 16, 2)->default(0);
-            $table->bigInteger('total_purchase_count')->default(0);
-
             $table->timestamps();
         });
 

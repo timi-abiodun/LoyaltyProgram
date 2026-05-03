@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
+use App\Models\Badge;
 use App\Models\Cashback;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

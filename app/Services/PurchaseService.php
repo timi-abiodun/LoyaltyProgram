@@ -19,9 +19,6 @@ class PurchaseService
                 'status' => PurchaseStatus::COMPLETED,
             ]);
 
-            $user->increment('total_amount_spent', $amount);
-            $user->increment('total_purchase_count');
-
         });
 
         PurchaseCompleted::dispatch($user);

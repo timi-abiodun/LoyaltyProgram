@@ -20,7 +20,8 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, HasUuids;
 
     protected $fillable = [
-        'full_name', 'username', 'email',
+        'first_name', 'last_name',
+        'username', 'email',
         'password',
     ];
 
@@ -38,10 +39,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'password'             => 'hashed',
-            'current_points'       => 'integer',
-            'total_amount_spent'   => 'decimal:2',
-            'total_purchase_count' => 'integer',
+            'password' => 'hashed'
         ];
     }
 
