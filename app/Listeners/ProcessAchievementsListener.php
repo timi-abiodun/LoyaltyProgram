@@ -3,15 +3,15 @@
 namespace App\Listeners;
 
 use App\Events\PurchaseCompleted;
-use App\Services\PurchaseCompletedService;
+use App\Services\ProcessAchievementsService;
 
-class HandlePurchaseCompleted
+class ProcessAchievementsListener
 {  
     /**
      * Create the event listener.
      */
     public function __construct(
-        protected PurchaseCompletedService $purchaseCompletedService
+        protected ProcessAchievementsService $processAchievementsService
     ){}
 
     /**
@@ -19,6 +19,6 @@ class HandlePurchaseCompleted
      */
     public function handle(PurchaseCompleted $event): void
     {
-        $this->purchaseCompletedService->handle($event);
+        $this->processAchievementsService->handle($event);
     }
 }

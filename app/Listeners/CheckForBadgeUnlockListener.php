@@ -3,22 +3,22 @@
 namespace App\Listeners;
 
 use App\Events\AchievementUnlocked;
-use App\Services\AchievementUnlockedService;
+use App\Services\CheckForBadgeUnlockService;
 
-class HandleAchievementUnlocked
+class CheckForBadgeUnlockListener
 {
     /**
      * Create the event listener.
      */
     public function __construct(
-        protected AchievementUnlockedService $achievementUnlockedService
-    ){}
-
+        protected CheckForBadgeUnlockService $checkForBadgeUnlockService
+    ) {}
+    
     /**
      * Handle the event.
      */
     public function handle(AchievementUnlocked $event): void
     {
-        $this->achievementUnlockedService->handle($event);
+        $this->checkForBadgeUnlockService->handle($event);
     }
 }

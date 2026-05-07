@@ -14,8 +14,12 @@ return new class extends Migration
         Schema::create('cashbacks', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->restrictOnDelete();
-            $table->decimal('amount', 8, 2)->default(0);
+            $table->foreignUuid('badge_id')->constrained()->restrictOnUpdate();
+            $table->decimal('amount', 8, 2)->unsigned()->default(0);
             $table->timestamps();
+
+            // Prevent double-spending at the DB level
+            $table->unique(['user_id', 'badge_id'], 'unique_user_badge_cashback');
         });
     }
 

@@ -4,16 +4,16 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\User;
+
 
 class StorePurchaseRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): User
+    public function authorize(): bool
     {
-        return $this->user();
+        return true;
     }
 
     /**

@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\UserDashboardController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\AchievementController;
 
 // Group everything under V1
 Route::prefix('v1')->group(function () {
@@ -18,6 +18,6 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
 
         Route::post('/purchases', [PurchaseController::class, 'store'])->name('purchase.store');
-        Route::get('/users/{user}/achievements', [AchievementController::class, 'index'])->name('achievement.index');
+        Route::get('/users/{user}/achievements', [UserDashboardController::class, 'show'])->name('dashboard.show');
     });
 });

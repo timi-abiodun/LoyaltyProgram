@@ -3,22 +3,22 @@
 namespace App\Listeners;
 
 use App\Events\BadgeUnlocked;
-use App\Services\BadgeUnlockedService;
+use App\Services\AwardBadgeCashbackService;
 
-class HandleBadgeUnlocked
+class AwardBadgeCashbackListener
 {
     /**
      * Create the event listener.
      */
     public function __construct(
-        protected BadgeUnlockedService $badgeUnlockedService
-    ) {}
-    
+        protected AwardBadgeCashbackService $awardBadgeCashbackService
+    ){}
+
     /**
      * Handle the event.
      */
     public function handle(BadgeUnlocked $event): void
     {
-        $this->badgeUnlockedService->handle($event);
+        $this->awardBadgeCashbackService->handle($event);
     }
 }

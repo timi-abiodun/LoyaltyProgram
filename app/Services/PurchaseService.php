@@ -12,15 +12,14 @@ class PurchaseService
 {
     public function completePurchase(User $user, int $amount)
     {
-        DB::transaction(function() use ($user, $amount){
-            Purchase::create([
-                'user_id' => $user->id,
-                'amount' => $amount,
-                'status' => PurchaseStatus::COMPLETED,
-            ]);
+        DB ::transaction(function () use ($user, $amount) {
+            $purchase = Purchase::create([
+                    'user_id' => $user->id,
+                    'amount' => $amount,
+                    'status' => PurchaseStatus::COMPLETED,
+                ]);            
 
+            PurchaseCompleted::dispatch($user, $purchase);
         });
-
-        PurchaseCompleted::dispatch($user);
     }
 }

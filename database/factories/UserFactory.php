@@ -25,16 +25,14 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'full_name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'username' => fake()->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'), // Default password for all test users
-            'current_points' => 0, // fake()->numberBetween(0, 1000),
-            'total_amount_spent' => 0, // fake()->randomFloat(2, 0, 5000),
-            'total_purchase_count' => 0, // fake()->numberBetween(0, 50),
-            //'remember_token' => Str::random(10),
         ];
     }
+
 
     /**
      * Indicate that the model's email address should be unverified.

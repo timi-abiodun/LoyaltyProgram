@@ -10,10 +10,12 @@ use Illuminate\Http\JsonResponse;
 
 class PurchaseController extends Controller
 {
-    public function __construct(protected PurchaseService $purchaseService){}
+    public function __construct(
+        protected PurchaseService $purchaseService
+    ){}
 
     public function store(StorePurchaseRequest $request): JsonResponse {
-        $user = Auth::user();
+        $user = $request->user();
         $amount = $request->validated('amount');
         
         $this->purchaseService->completePurchase($user, $amount);
