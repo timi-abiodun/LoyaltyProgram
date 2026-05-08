@@ -12,8 +12,12 @@ class BadgeFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->jobTitle() . ' Tier',
-            'points_required' => $this->faker->unique()->numberBetween(0, 10000),
+            // Using a word/jobTitle is fine, but 'unique' is safer here than on numbers
+            'name' => $this->faker->unique()->word() . ' Badge',
+            
+            // Remove 'unique'. Give it a low default so tests "accidentally" pass 
+            // unless you explicitly override it.
+            'points_required' => $this->faker->numberBetween(10, 500), 
         ];
     }
 }

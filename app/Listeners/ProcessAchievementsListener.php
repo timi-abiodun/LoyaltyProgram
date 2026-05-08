@@ -5,8 +5,12 @@ namespace App\Listeners;
 use App\Events\PurchaseCompleted;
 use App\Services\ProcessAchievementsService;
 
+use Illuminate\Queue\InteractsWithQueue;
+
 class ProcessAchievementsListener
 {  
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */

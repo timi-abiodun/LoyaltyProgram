@@ -12,7 +12,12 @@ class AwardBadgeCashbackService
         $user = $event->user;
         $badge = $event->badge;
 
-        $reward = config("cashback_amount");
+        $reward = config("loyalty.cashback_amount", 0);
+
+        // If reward is zero or null, don't waste DB rows
+        if ($reward <= 0) {
+            return;
+        }
 
         $cashback = Cashback::firstOrCreate(
             ['user_id' => $user->id, 'badge_id'=> $badge->id],

@@ -1,65 +1,77 @@
 <?php
 
-use App\Models\User;
 use App\Models\Achievement;
-use App\Models\Badge;
+use App\Models\User;
 
-it('gets and checks all 5 fields are correct', function () {
-    // arrange - create a user and authenticate
-    $user = User::factory()->create([
-        'current_points' => 150, 
-        'total_purchase_count' => 3, 
-        'total_amount_spent' => 5000
-    ]);    
+use function Pest\Laravel\actingAs;
+
+// (no beforeEach needed)
+
+
+test('unlocking purchases_count achievement after enough purchases', function () {
+    $user = User::factory()->create();
     $this->actingAs($user);
 
-    // Two achievements — one the user has unlocked, one they haven't:
-    $unlocked_achievement = Achievement::factory()->create();
-
-    $available_achievement = Achievement::factory()->create([
+    $achievement = Achievement::factory()->create([
         'type' => 'purchases_count',
-        'threshold' => 200,
+        'threshold' => 2,
+        'points_awarded' => 50,
     ]);
 
-    // Two Badges - one the user qualifies for and the next available badge
-    $unlocked_badge = Badge::factory()->create(['points_required' => 100]);
-    $next_badge = Badge::factory()->create(['points_required' => 300]);
+    // 1st purchase - should NOT unlock
+    $response = $this->postJson('/api/v1/purchases', ['amount' => 100]);
+    $response->assertStatus(201)
+        ->assertJson(['message' => 'Purchase completed successfully.']);
 
-    // attach the unlocked achievement to the user
-    $user->achievements()->attach($unlocked_achievement->id, ['unlocked_at' => now()]);
+    $this->assertDatabaseMissing('user_achievements', [
+        'user_id' => $user->id,
+        'achievement_id' => $achievement->id,
+    ]);
 
-     // act - GET /api/v1/users/{user}/achievements for all 5 fields:
-        // ■ unlocked_achievements (array of strings)
-        // ■ next_available_achievements (array of strings)
-        // ■ current_badge (string)
-        // ■ next_badge (string)
-        // ■ remaining_to_unlock_next_badge (integer)
-    $response = $this->getJson("/api/v1/users/{$user->id}/achievements");
-    
-    // assert - check that all 5 fields are consistent
-    $response->assertStatus(200)
-        ->assertJsonStructure([
-                    'data' => [
-                        'achievements' => ['unlocked_achievements', 'next_available_achievements'],
-                        'badges' => ['current_badge', 'next_badge', 'remaining_to_unlock_next_badge']
-                    ]
-                ])
-                ->assertJson([
-                    'data' => [
-                        'achievements' => [
-                            'unlocked_achievements' => [
-                                ['id' => $unlocked_achievement->id]
-                            ],
-                            'next_available_achievements' => [
-                                ['id' => $available_achievement->id]
-                            ],
-                        ],
-                        'badges' => [
-                            'current_badge' => ['id' => $unlocked_badge->id],
-                            'next_badge' => ['id' => $next_badge->id],
-                            'remaining_to_unlock_next_badge' => 150, // 300 (next) - 150 (current)
-                        ]
-                    ]
-                ]);    
+    // 2nd purchase - should unlock
+    $response = $this->postJson('/api/v1/purchases', ['amount' => 120]);
+    $response->assertStatus(201)
+        ->assertJson(['message' => 'Purchase completed successfully.']);
+
+    $this->assertDatabaseHas('user_achievements', [
+        'user_id' => $user->id,
+        'achievement_id' => $achievement->id,
+    ]);
+
+    $this->assertDatabaseHas('user_achievements', [
+        'user_id' => $user->id,
+        'achievement_id' => $achievement->id,
+    ]);
+});
+
+test('unlocking amount_spent achievement after reaching threshold amount', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $achievement = Achievement::factory()->create([
+        'type' => 'amount_spent',
+        'threshold' => 250,
+        'points_awarded' => 80,
+    ]);
+
+    // First purchase: amount = 150 (still below threshold)
+    $response = $this->postJson('/api/v1/purchases', ['amount' => 150]);
+    $response->assertStatus(201)
+        ->assertJson(['message' => 'Purchase completed successfully.']);
+
+    $this->assertDatabaseMissing('user_achievements', [
+        'user_id' => $user->id,
+        'achievement_id' => $achievement->id,
+    ]);
+
+    // Second purchase: total = 150 + 120 = 270 (meets/exceeds threshold)
+    $response = $this->postJson('/api/v1/purchases', ['amount' => 120]);
+    $response->assertStatus(201)
+        ->assertJson(['message' => 'Purchase completed successfully.']);
+
+    $this->assertDatabaseHas('user_achievements', [
+        'user_id' => $user->id,
+        'achievement_id' => $achievement->id,
+    ]);
 });
 

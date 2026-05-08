@@ -5,8 +5,11 @@ namespace App\Listeners;
 use App\Events\BadgeUnlocked;
 use App\Services\AwardBadgeCashbackService;
 
+use Illuminate\Queue\InteractsWithQueue;
+
 class AwardBadgeCashbackListener
 {
+    use InteractsWithQueue;
     /**
      * Create the event listener.
      */

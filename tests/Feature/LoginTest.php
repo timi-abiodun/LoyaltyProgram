@@ -2,6 +2,14 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
+
+beforeEach(function () {
+    RateLimiter::for('auth', function () {
+        return Limit::none(); // Removes the limit for the test environment
+    });
+});
 
 test('user can login with correct credentials', function () {
     // 1. Arrange: Create a user
@@ -34,11 +42,26 @@ test('user cannot login with incorrect password', function () {
 
     $response = $this->postJson('/api/v1/login', [
         'username' => $user->username,
-        'password' => 'wrong-password',
+        'password' => 'wrong_password',
     ]);
 
     $response->assertStatus(401);
     $this->assertGuest();
 });
 
+test('login fails if username does not exist', function () {
+    $response = $this->postJson('/api/v1/login', [
+        'username' => 'non_existent_user',
+        'password' => 'any_password',
+    ]);
 
+    $response->assertStatus(401)
+             ->assertJson(['message' => 'The provided credentials are incorrect.']);
+});
+
+test('login requires both username and password', function () {
+    $response = $this->postJson('/api/v1/login', []);
+
+    $response->assertStatus(422)
+             ->assertJsonValidationErrors(['username', 'password']);
+});

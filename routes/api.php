@@ -1,23 +1,33 @@
 <?php
 
 use App\Http\Controllers\UserDashboardController;
-use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PurchaseController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
-// Group everything under V1
 Route::prefix('v1')->group(function () {
     
-    // Public Auth
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    // Auth: Restricted by 'auth' rate limiter (5 req/min)
+    Route::middleware('throttle:auth')->group(function () {
+        Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
+        Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+    });
 
-    // Protected Routes
+    // Protected: Requires valid token
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/user', fn (Request $request) => $request->user());
-        Route::post('/logout', [AuthController::class, 'logout']);
 
-        Route::post('/purchases', [PurchaseController::class, 'store'])->name('purchase.store');
-        Route::get('/users/{user}/achievements', [UserDashboardController::class, 'show'])->name('dashboard.show');
+        Route::get('/user', fn (Request $request) => $request->user());
+        
+        // Purchases: Restricted by 'purchases' rate limiter (3 req/min)
+        Route::post('/purchases', [PurchaseController::class, 'store'])
+            ->middleware('throttle:purchases') 
+            ->name('purchases.store');
+
+        Route::get('/users/{user}/achievements', [UserDashboardController::class, 'show'])
+            ->name('dashboard.show');
+            
+        Route::post('/logout', [AuthController::class, 'logout'])
+            ->name('auth.logout');
     });
 });

@@ -18,7 +18,7 @@ class PurchaseFactory extends Factory
     {
         return [
             'user_id' => \App\Models\User::factory(), // This magically creates a user for the purchase
-            'amount' => fake()->randomFloat(2, 10, 2000), // Realistically, people don't spend $5000 every day
+            'amount' => fake()->randomNumber(), // Realistically, people don't spend $5000 every day
             // 'status' => fake()->randomElement(['pending', 'completed', 'cancelled']),
         ];
     }

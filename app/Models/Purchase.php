@@ -20,7 +20,7 @@ class Purchase extends Model
     {
         return [
             'status' => PurchaseStatus::class,
-            'amount' => 'decimal:2',
+            'amount' => 'integer',
         ];
     }
 

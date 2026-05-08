@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('purchases', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->restrictOnDelete();
-            $table->decimal('amount', 16, 2)->default(0);
+            $table->bigInteger('amount')->unsigned()->default(0);
             $table->string('status')->default('pending');
             $table->timestamps();
         });

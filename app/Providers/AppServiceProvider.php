@@ -8,6 +8,10 @@ use App\Strategies\PurchaseCountStrategy;
 use App\Services\ProcessAchievementsService;
 use App\Services\AchievementService;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Request;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -37,6 +41,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Limiter for Auth *(Login/Register)
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(5)->by($request->input('email').$request->ip());
+        }); 
+
+        // Limiter for Purchases (More strict to prevent double-spend spam)
+        RateLimiter::for('purchases', function (Request $request) {
+            return Limit::perMinute(3)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

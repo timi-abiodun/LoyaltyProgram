@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -9,23 +11,17 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request){
-        // 1. Strict Validation
-        $fields = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'username' => 'required',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed' // Looks for password_confirmation
-        ]);
+    public function register(RegisterRequest $request){
+        // 1. Fetch validated input
+        $data = $request->validated();
 
         // 2. Create User
         $user = User::create([
-            'first_name' => $fields['first_name'],
-            'last_name' => $fields['last_name'],
-            'username' => $fields['username'],
-            'email' => $fields['email'],
-            'password' => Hash::make($fields['password']), //HASH passwords
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']), //HASH passwords
         ]);
 
         // 3. Generate Token
@@ -38,27 +34,32 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request){
-        // 1. Validate Input
-        $request->validate([
-            'username'=> 'required',
-            'password' => 'required'
-        ]);
+    public function login(LoginRequest $request){
+        // 1. Fetch Validated Input
+        $data = $request->validated();
         
         // 2. Find user
-        $user = User::where('username', $request->username)->first();
+        $user = User::where('username', $data['username'])->first();
 
         // Check If user doesn't exist or password fails
-        if (! $user || ! Hash::check($request->password, $user->password)){
+        if (! $user || ! Hash::check($data['password'], $user->password)){
            return response()->json([
                 'message' => 'The provided credentials are incorrect.'
             ], 401);
         }
 
-        //4. Create and return token
+        //4. Revoke previous tokens (prevents multiple active sessions)
+        $user->tokens()->delete();
+
+        //5. Create and return token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+            ],
             'access_token' => $token,
             'token_type' => 'Bearer'
         ]);
