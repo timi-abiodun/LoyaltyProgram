@@ -1,121 +1,49 @@
-# Loyalty Program (Laravel)
+# Loyalty Program API
 
-A small loyalty-program API + dashboard UI.
+A backend-only Laravel API implementing a points, achievements, badges, and cashback system using Laravel Sanctum for authentication.
 
-## What this app does
-- User authentication (register/login/logout) using **Laravel Sanctum tokens**.
-- Users can create purchases.
-- Purchases unlock **achievements** (by purchase count and amount spent).
-- Achievement unlocks can award **badges**.
-- Badge unlocks can award **cashback**.
-- A protected user endpoint returns dashboard data (achievements + next badge state).
+---
 
-## Tech stack
-- PHP 8.3+
-- Laravel 13
-- Sanctum (token auth)
-- Vite + TailwindCSS (front-end build)
-- Pest (tests)
+## Setup
 
-## Requirements
-- PHP 8.3+
-- Composer
-- Node.js + npm
-- A configured database (see `.env`)
+**Prerequisites:** PHP 8.3+, Composer, a configured database in `.env`
 
-## Local setup
-
-1) Install PHP dependencies
 ```bash
 composer install
-```
-
-2) Copy env + generate key
-```bash
 cp .env.example .env
 php artisan key:generate
-```
-
-3) Configure DB in `.env`
-
-4) Run migrations
-```bash
 php artisan migrate --force
-```
-
-5) (Optional) Seed demo data
-```bash
-php artisan db:seed --class=DatabaseSeeder
-```
-
-6) Install JS dependencies + build/dev assets
-```bash
-npm install --ignore-scripts
-npm run dev
-```
-
-## Run the server
-```bash
+php artisan db:seed
 php artisan serve
 ```
 
-If you want the full dev workflow (web + queue worker + Vite) use:
-```bash
-composer run dev
-```
+---
 
-## API (v1)
-Base path: `/api/v1`
+## Endpoints
 
-### Auth
-#### Register
-`POST /api/v1/register`
-- Creates a user and returns:
-  - `access_token` (Bearer token)
-  - `token_type` (`Bearer`)
+| Method | Endpoint | Auth Required |
+|--------|----------|---------------|
+| POST | `/api/v1/register` | No |
+| POST | `/api/v1/login` | No |
+| POST | `/api/v1/logout` | Yes |
+| POST | `/api/v1/purchases` | Yes |
+| GET | `/api/v1/users/{user}/achievements` | Yes |
 
-#### Login
-`POST /api/v1/login`
-- Accepts `username` + `password`
-- Deletes existing user tokens (single active session behavior)
-- Returns a new `access_token`.
+All protected endpoints require `Authorization: Bearer <token>`.
 
-#### Logout
-`POST /api/v1/logout`
-- Protected by `auth:sanctum`
-- Revokes the current access token.
-
-### Purchases
-#### Create purchase
-`POST /api/v1/purchases`
-- Protected by `auth:sanctum`
-- Rate limited by `throttle:purchases` (3 req/min)
-- Body: JSON
-  - `amount` (number)
-
-Response: `201 Created` with:
-- `{ "message": "Purchase completed successfully." }`
-
-This triggers achievement/badge/cashback processing via events & listeners.
-
-### User dashboard data
-#### Get dashboard achievements/badges
-`GET /api/v1/users/{user}/achievements`
-- Protected by `auth:sanctum`
-- Returns data consumed by the dashboard UI.
-
-## Configuration
-Cashback amount is controlled via:
-- `config/loyalty.php` (`cashback_amount`, default: `300`)
-
+---
 
 ## Testing
-Run all tests:
+
 ```bash
 php artisan test
 ```
 
-## Notes / current TODO
-There is an ongoing modernization task tracked in `TODO.md`.
+---
 
+## Design Decisions
 
+- **Strategy pattern for achievement evaluation** — `PurchaseCountStrategy` and `AmountSpentStrategy` implement a shared interface, making it straightforward to add new achievement types without touching existing logic.
+- **Event-driven unlocking** — purchases dispatch a `PurchaseCompleted` event; a listener runs `ProcessAchievementsService` asynchronously, keeping the purchase endpoint response fast.
+- **Rate limiting** — auth endpoints are limited to 5 req/min; purchase endpoints to 3 req/min, configured in `AppServiceProvider` to reduce double-spend risk.
+- **Cashback is mocked** — badge unlock triggers a log entry rather than a real payment provider call, as per spec.
