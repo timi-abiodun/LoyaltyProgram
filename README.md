@@ -1,265 +1,121 @@
-# Loyalty Program API
+# Loyalty Program (Laravel)
 
-A backend system for a loyalty program where customers unlock achievements and earn badges for their purchases. After every unlocked badge, a cashback payment of 300 naira is rewarded.
+A small loyalty-program API + dashboard UI.
 
----
+## What this app does
+- User authentication (register/login/logout) using **Laravel Sanctum tokens**.
+- Users can create purchases.
+- Purchases unlock **achievements** (by purchase count and amount spent).
+- Achievement unlocks can award **badges**.
+- Badge unlocks can award **cashback**.
+- A protected user endpoint returns dashboard data (achievements + next badge state).
 
-## Tech Stack
+## Tech stack
+- PHP 8.3+
+- Laravel 13
+- Sanctum (token auth)
+- Vite + TailwindCSS (front-end build)
+- Pest (tests)
 
-- **Framework:** Laravel (PHP)
-- **Database:** PostgreSQL (production), SQLite (testing)
-- **Authentication:** Laravel Sanctum
-- **Testing:** Pest
+## Requirements
+- PHP 8.3+
+- Composer
+- Node.js + npm
+- A configured database (see `.env`)
 
----
+## Local setup
 
-## Setup Instructions
-
+1) Install PHP dependencies
 ```bash
-# 1. Clone the repository
-git clone https://github.com/T-Skhillz/LoyaltyProgram.git
-cd LoyaltyProgram
-
-# 2. Install dependencies
 composer install
+```
 
-# 3. Configure environment
+2) Copy env + generate key
+```bash
 cp .env.example .env
 php artisan key:generate
+```
 
-# 4. Update .env with your database credentials
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=loyalty_program
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+3) Configure DB in `.env`
 
-# 5. Run migrations and seed the database
-php artisan migrate --seed
+4) Run migrations
+```bash
+php artisan migrate --force
+```
 
-# 6. Serve the application
+5) (Optional) Seed demo data
+```bash
+php artisan db:seed --class=DatabaseSeeder
+```
+
+6) Install JS dependencies + build/dev assets
+```bash
+npm install --ignore-scripts
+npm run dev
+```
+
+## Run the server
+```bash
 php artisan serve
 ```
 
----
-
-## API Endpoints
-
-All endpoints except `register` and `login` require a `Bearer` token in the `Authorization` header.
-
-```
-POST      /api/v1/register
-POST      /api/v1/login
-POST      /api/v1/logout
-GET|HEAD  /api/v1/user
-POST      /api/v1/purchases
-GET|HEAD  /api/v1/users/{user}/achievements
+If you want the full dev workflow (web + queue worker + Vite) use:
+```bash
+composer run dev
 ```
 
----
+## API (v1)
+Base path: `/api/v1`
 
-### POST /api/v1/register
+### Auth
+#### Register
+`POST /api/v1/register`
+- Creates a user and returns:
+  - `access_token` (Bearer token)
+  - `token_type` (`Bearer`)
 
-**Request:**
-```json
-{
-    "full_name": "Red Hood",
-    "username": "red",
-    "email": "red@gmail.com",
-    "password": "1234test",
-    "password_confirmation": "1234test"
-}
-```
+#### Login
+`POST /api/v1/login`
+- Accepts `username` + `password`
+- Deletes existing user tokens (single active session behavior)
+- Returns a new `access_token`.
 
-**Response `201`:**
-```json
-{
-    "user": {
-        "full_name": "Red Hood",
-        "username": "red",
-        "email": "red@gmail.com",
-        "id": "019dbf83-8b38-717a-85ff-e79c77c4e340",
-        "updated_at": "2026-04-25T14:35:37.000000Z",
-        "created_at": "2026-04-24T12:42:42.000000Z"
-    },
-    "access_token": "your_token_here",
-    "token_type": "Bearer"
-}
-```
+#### Logout
+`POST /api/v1/logout`
+- Protected by `auth:sanctum`
+- Revokes the current access token.
 
----
+### Purchases
+#### Create purchase
+`POST /api/v1/purchases`
+- Protected by `auth:sanctum`
+- Rate limited by `throttle:purchases` (3 req/min)
+- Body: JSON
+  - `amount` (number)
 
-### POST /api/v1/login
+Response: `201 Created` with:
+- `{ "message": "Purchase completed successfully." }`
 
-**Request:**
-```json
-{
-    "username": "red",
-    "password": "1234test"
-}
-```
+This triggers achievement/badge/cashback processing via events & listeners.
 
-**Response `200`:**
-```json
-{
-    "access_token": "your_token_here",
-    "token_type": "Bearer"
-}
-```
+### User dashboard data
+#### Get dashboard achievements/badges
+`GET /api/v1/users/{user}/achievements`
+- Protected by `auth:sanctum`
+- Returns data consumed by the dashboard UI.
 
----
+## Configuration
+Cashback amount is controlled via:
+- `config/loyalty.php` (`cashback_amount`, default: `300`)
 
-### POST /api/v1/logout
 
-**Response `200`:**
-```json
-{
-    "message": "Logged out successfully"
-}
-```
-
----
-
-### GET /api/v1/user
-
-**Response `200`:**
-```json
-{
-    "id": "019dbf83-8b38-717a-85ff-e79c77c4e340",
-    "full_name": "Red Hood",
-    "username": "red",
-    "email": "red@gmail.com",
-    "current_points": 1050,
-    "total_amount_spent": "50000.00",
-    "total_purchase_count": 5,
-    "created_at": "2026-04-24T12:42:42.000000Z",
-    "updated_at": "2026-04-25T14:35:37.000000Z"
-}
-```
-
----
-
-### POST /api/v1/purchases
-
-**Request:**
-```json
-{
-    "amount": 1234
-}
-```
-
-**Response `201`:**
-```json
-{
-    "message": "Purchase completed successfully."
-}
-```
-
----
-
-### GET /api/v1/users/{user}/achievements
-
-**Response `200`:**
-```json
-{
-    "data": {
-        "achievements": {
-            "unlocked_achievements": [
-                {
-                    "id": "019dbf83-13fc-72e5-af3d-ef3e608edc84",
-                    "name": "Whale",
-                    "type": "amount_spent",
-                    "points_awarded": 1000,
-                    "threshold": 25000,
-                    "created_at": "2026-04-24T12:42:11.000000Z",
-                    "updated_at": "2026-04-24T12:42:11.000000Z"
-                },
-                {
-                    "id": "019dbf83-13ff-7047-b305-602d08474849",
-                    "name": "Loyal Supporter",
-                    "type": "amount_spent",
-                    "points_awarded": 50,
-                    "threshold": 1000,
-                    "created_at": "2026-04-24T12:42:11.000000Z",
-                    "updated_at": "2026-04-24T12:42:11.000000Z"
-                }
-            ],
-            "next_available_achievements": [
-                {
-                    "id": "019dbf83-12b9-7036-a3ae-6b153499f78a",
-                    "name": "Early Bird",
-                    "type": "purchases_count",
-                    "points_awarded": 10,
-                    "threshold": 1,
-                    "created_at": "2026-04-24T12:42:11.000000Z",
-                    "updated_at": "2026-04-24T12:42:11.000000Z"
-                },
-                {
-                    "id": "019dbf83-13fd-7127-8d82-183a91b97f30",
-                    "name": "Bronze Spender",
-                    "type": "purchases_count",
-                    "points_awarded": 50,
-                    "threshold": 10,
-                    "created_at": "2026-04-24T12:42:11.000000Z",
-                    "updated_at": "2026-04-24T12:42:11.000000Z"
-                },
-                {
-                    "id": "019dbf83-13fa-7332-9644-ec0ca9f7820b",
-                    "name": "Power User",
-                    "type": "purchases_count",
-                    "points_awarded": 250,
-                    "threshold": 50,
-                    "created_at": "2026-04-24T12:42:11.000000Z",
-                    "updated_at": "2026-04-24T12:42:11.000000Z"
-                }
-            ]
-        },
-        "badges": {
-            "current_badge": {
-                "id": "019dbf83-12c6-7236-8446-b432a3e8711b",
-                "name": "Loyal Customer",
-                "points_required": 1000,
-                "created_at": "2026-04-24T12:42:11.000000Z",
-                "updated_at": "2026-04-24T12:42:11.000000Z"
-            },
-            "next_badge": {
-                "id": "019dbf83-1532-7004-8f18-764736fe027f",
-                "name": "Elite Member",
-                "points_required": 2000,
-                "created_at": "2026-04-24T12:42:12.000000Z",
-                "updated_at": "2026-04-24T12:42:12.000000Z"
-            },
-            "remaining_to_unlock_next_badge": 950
-        },
-        "meta": {
-            "generated_at": "2026-04-25T15:03:26+00:00"
-        }
-    }
-}
-```
-
----
-
-## Running Tests
-
+## Testing
+Run all tests:
 ```bash
 php artisan test
 ```
 
-## Frontend Dashboard
+## Notes / current TODO
+There is an ongoing modernization task tracked in `TODO.md`.
 
-A standalone HTML dashboard is included at `public/loyalty_program_dashboard.html`.
 
-Access it at: `http://loyalty_program.test/loyalty_program_dashboard.html`
-
-Features:
-- Register and login
-- View current badge and progress to next badge
-- Submit purchases
-- Track unlocked and upcoming achievements
-- Live notifications for unlocked achievements, badges, and cashback rewards
-
-> **Note:** The dashboard is implemented in vanilla HTML/CSS/JavaScript rather than React. 
-> The backend pipeline was the primary focus of this assessment. The frontend demonstrates 
-> full API integration including authentication, purchase flow, and real-time unlock notifications.
