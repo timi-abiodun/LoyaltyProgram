@@ -52,7 +52,8 @@ Content-Type: application/json
 **Request:**
 ```json
 {
-    "full_name": "Red Hood",
+    "first_name": "Red",
+    "last_name": "Hood",
     "username": "red",
     "email": "red@gmail.com",
     "password": "1234test",
@@ -65,7 +66,8 @@ Content-Type: application/json
 {
     "user": {
         "id": "019dbf83-8b38-717a-85ff-e79c77c4e340",
-        "full_name": "Red Hood",
+        "first_name": "Red",
+        "last_name": "Hood",
         "username": "red",
         "email": "red@gmail.com",
         "updated_at": "2026-04-25T14:35:37.000000Z",
@@ -119,7 +121,8 @@ Returns the authenticated user's profile and running stats.
 ```json
 {
     "id": "019dbf83-8b38-717a-85ff-e79c77c4e340",
-    "full_name": "Red Hood",
+    "first_name": "Red",
+    "last_name": "Hood",
     "username": "red",
     "email": "red@gmail.com",
     "current_points": 1050,
