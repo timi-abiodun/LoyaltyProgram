@@ -125,9 +125,6 @@ Returns the authenticated user's profile and running stats.
     "last_name": "Hood",
     "username": "red",
     "email": "red@gmail.com",
-    "current_points": 1050,
-    "total_amount_spent": "50000.00",
-    "total_purchase_count": 5,
     "created_at": "2026-04-24T12:42:42.000000Z",
     "updated_at": "2026-04-25T14:35:37.000000Z"
 }
