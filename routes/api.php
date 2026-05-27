@@ -6,14 +6,6 @@ use App\Http\Controllers\PurchaseController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
-
-Route::options('{any}', function() {
-    return response()->json('OK', 200)
-        ->header('Access-Control-Allow-Origin', env('FRONTEND_URL', 'http://localhost:5173'))
-        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-        ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-})->where('any', '.*');
-
 Route::prefix('v1')->group(function () {
     
     // Auth: Restricted by 'auth' rate limiter (5 req/min)
